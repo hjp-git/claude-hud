@@ -130,8 +130,6 @@ interface TranscriptCacheFile {
   data: SerializedTranscriptData;
 }
 
-// Bump when cached transcript semantics change. Version 19 invalidates
-// caches written before synthetic assistant model records were ignored.
 const TRANSCRIPT_CACHE_VERSION = 19;
 const MCP_TOOL_NAME_PATTERN = /^mcp__(.+?)__(.+)$/;
 const ACTIVITY_NAME_MAX_LEN = 64;
@@ -604,9 +602,7 @@ export async function parseTranscript(transcriptPath: string): Promise<Transcrip
         // model Claude Code thinks it's using (e.g. proxy redirect via cc-switch).
         if (entry.type === 'assistant') {
           const transcriptModel = sanitizeTranscriptModel(entry.message?.model);
-          // Claude Code may append synthetic assistant records for local
-          // command/UI events. They are not API responses and must not
-          // replace the last real served model in the HUD.
+          // Claude Code writes '<synthetic>' on locally generated assistant records.
           if (transcriptModel && transcriptModel !== '<synthetic>') {
             result.lastAssistantModel = transcriptModel;
           }
